@@ -46,7 +46,7 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 				'name' => 'mappings',
 				'label' => esc_html__( 'Field Mapping', 'gravitywpsaveandcontinue' ),
 				'type' => 'generic_map',
-				'enable_custom_key' => true,
+				'enable_custom_key' => false,
 				'enable_custom_value' => true,
 				'key_field_title' => esc_html__( 'Field', 'gravitywpsaveandcontinue' ),
 				'value_field_title' => esc_html__( 'Value', 'gravitywpsaveandcontinue' ),

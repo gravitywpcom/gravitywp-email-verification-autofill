@@ -278,7 +278,7 @@ if ( class_exists( 'GFForms' ) ) {
 
 			$api = new Gravity_Flow_API( $parent_entry['form_id'] );
 
-			/* @var Gravity_Flow_Step_Form_Submission $current_step */
+			/* @var Gravity_Flow_Step_Save_And_Continue $current_step */
 			$current_step = $api->get_current_step( $parent_entry );
 
 			if ( empty( $current_step ) || $current_step->get_type() != 'save_and_continue' ) {
@@ -286,7 +286,7 @@ if ( class_exists( 'GFForms' ) ) {
 			}
 
 			$parent_entry = $current_step->get_entry();
-			$mapped_entry = $current_step->do_mapping( $form, $parent_entry );
+//			$mapped_entry = $current_step->do_mapping( $form, $parent_entry );
 
 			return isset( $mapped_entry[ $input_id ] ) ? $mapped_entry[ $input_id ] : $value;
 		}
