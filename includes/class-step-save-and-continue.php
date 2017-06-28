@@ -17,7 +17,11 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 		public $_step_type = 'save_and_continue';
 
 		public function get_label() {
-			return esc_html__( 'Save And Continue', 'gravitywpsaveandcontinue' );
+			return esc_html__( 'Save and Continue', 'gravitywpsaveandcontinue' );
+		}
+
+		public function get_icon_url() {
+			return '<i class="fa fa-step-forward"></i>';
 		}
 
 		public function get_settings() {
@@ -28,7 +32,7 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 			}
 
 			$settings = array(
-				'title'  => esc_html__( 'Save And Continue', 'gravitywpsaveandcontinue' ),
+				'title'  => esc_html__( 'Save and Continue', 'gravitywpsaveandcontinue' ),
 				'fields' => array(
 					array(
 						'name' => 'target_form_id',

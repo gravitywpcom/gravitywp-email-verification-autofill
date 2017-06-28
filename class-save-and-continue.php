@@ -285,7 +285,7 @@ if ( class_exists( 'GFForms' ) ) {
 				return $value;
 			}
 
-			$parent_entry = $current_step->get_entry();
+//			$parent_entry = $current_step->get_entry();
 //			$mapped_entry = $current_step->do_mapping( $form, $parent_entry );
 
 			return isset( $mapped_entry[ $input_id ] ) ? $mapped_entry[ $input_id ] : $value;
