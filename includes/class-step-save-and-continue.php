@@ -87,7 +87,7 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 				return false;
 			}
 
-			$fields = $this->get_field_map_choices( $target_form );
+			$fields = $this->get_field_map_choices( $target_form, 'target' );
 			return $fields;
 		}
 
@@ -104,6 +104,70 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 			return $fields;
 		}
 
+		function process() {
+			$result = $this->insert_incomplete_submission();
+			$note = $this->get_name() . ': ' . esc_html__( 'Processed.', 'gravityflow' );
+			$this->add_note( $note, 0, $this->get_type() );
+
+			return $result;
+		}
+
+		public function insert_incomplete_submission() {
+			$entry = $this->get_entry();
+
+			$form = $this->get_form();
+			$target_form = $this->get_target_form();
+
+			$new_entry = $this->do_mapping( $form, $entry );
+
+			if ( ! empty( $new_entry ) ) {
+				$_submission = $new_entry;
+				unset($_submission['uuid']);
+				$form_unique_id = GFFormsModel::get_form_unique_id( $form['id'] );
+
+				$files = GFCommon::json_decode( stripslashes( RGForms::post( 'gform_uploaded_files' ) ) );
+				if ( ! is_array( $files ) ) {
+					$files = array();
+				}
+
+				$submission['submitted_values'] = $_submission;
+				$submission['partial_entry']    = new stdClass();
+				$submission['field_values']     = "";
+				$submission['page_number']      = 1;
+				$submission['files']            = $files;
+				$submission['gform_unique_id']  = $form_unique_id;
+
+//				$result = GFFormsModel::save_incomplete_submission( $form, GFFormsModel::get_current_lead(), $_submission, 1, $files, $form_unique_id, $new_entry['ip'], $new_entry['source_url'], $new_entry['uuid'] );
+
+				global $wpdb;
+				$result = $wpdb->insert(
+					GFFormsModel::get_incomplete_submissions_table_name(),
+					array(
+						'uuid'         => $new_entry['uuid'],
+						'form_id'      => $target_form['id'],
+						'date_created' => current_time( 'mysql', true ),
+						'submission'   => json_encode( $submission ),
+						'ip'           => $new_entry['ip'],
+						'source_url'   => $new_entry['source_url'],
+					),
+					array(
+						'%s',
+						'%d',
+						'%s',
+						'%s',
+						'%s',
+						'%s',
+					)
+				);
+
+				if ( is_wp_error( $result ) ) {
+					$this->log_debug( __METHOD__ .'(): failed to add incomplete submissions' );
+				}
+			}
+
+			return true;
+		}
+
 		public function get_forms() {
 			$forms = GFFormsModel::get_forms();
 			return $forms;
@@ -115,7 +179,7 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 			return $form;
 		}
 
-		public function get_field_map_choices( $form, $field_type = null, $exclude_field_types = null ) {
+		public function get_field_map_choices( $form, $form_type = '', $field_type = null, $exclude_field_types = null ) {
 
 			$fields = array();
 
@@ -142,6 +206,10 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 				$fields[] = array( 'value' => 'ip', 'label' => esc_html__( 'User IP', 'gravitywpsaveandcontinue' ) );
 				$fields[] = array( 'value' => 'source_url', 'label' => esc_html__( 'Source Url', 'gravitywpsaveandcontinue' ) );
 				$fields[] = array( 'value' => 'created_by', 'label' => esc_html__( 'Created By', 'gravitywpsaveandcontinue' ) );
+
+				if ( 'target' == $form_type ) {
+					$fields[] = array( 'value' => 'uuid', 'label' => esc_html__( 'SF: UUID', 'gravitywpsaveandcontinue' ) );
+				}
 
 //				$entry_meta = GFFormsModel::get_entry_meta( $form['id'] );
 //				foreach ( $entry_meta as $meta_key => $meta ) {
@@ -222,6 +290,208 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 			}
 
 			return $fields;
+		}
+
+		/**
+		 * Maps the field values of the entry to the target form.
+		 *
+		 * @param $form
+		 * @param $entry
+		 *
+		 * @return array $new_entry
+		 */
+		public function do_mapping( $form, $entry ) {
+			$new_entry = array();
+
+			if ( ! is_array( $this->mappings ) ) {
+
+				return $new_entry;
+			}
+
+			$target_form = $this->get_target_form();
+
+			if ( ! $target_form ) {
+				$this->log_debug( __METHOD__ . '(): aborting; unable to get target form.' );
+
+				return $new_entry;
+			}
+
+			foreach ( $this->mappings as $mapping ) {
+				if ( rgblank( $mapping['key'] ) ) {
+					continue;
+				}
+
+				$new_entry = $this->add_mapping_to_entry( $mapping, $entry, $new_entry, $form, $target_form );
+			}
+
+			return apply_filters( 'gravitywpsaveandcontinue_' . $this->get_type(), $new_entry, $entry, $form, $target_form, $this );
+		}
+
+		/**
+		 * Add the mapped value to the new entry.
+		 *
+		 * @param array $mapping The properties for the mapping being processed.
+		 * @param array $entry The entry being processed by this step.
+		 * @param array $new_entry The entry to be added or updated.
+		 * @param array $form The form being processed by this step.
+		 * @param array $target_form The target form for the entry being added or updated.
+		 *
+		 * @return array
+		 */
+		public function add_mapping_to_entry( $mapping, $entry, $new_entry, $form, $target_form ) {
+			$target_field_id = trim( $mapping['key'] );
+			$source_field_id = (string) $mapping['value'];
+
+			$source_field = GFFormsModel::get_field( $form, $source_field_id );
+
+			if ( is_object( $source_field ) ) {
+				$is_full_source      = $source_field_id === (string) intval( $source_field_id );
+				$source_field_inputs = $source_field->get_entry_inputs();
+				$target_field        = GFFormsModel::get_field( $target_form, $target_field_id );
+
+				if ( $is_full_source && is_array( $source_field_inputs ) ) {
+					$is_full_target      = $target_field_id === (string) intval( $target_field_id );
+					$target_field_inputs = is_object( $target_field ) ? $target_field->get_entry_inputs() : false;
+
+					if ( $is_full_target && is_array( $target_field_inputs ) ) {
+						foreach ( $source_field_inputs as $input ) {
+							$input_id               = str_replace( $source_field_id . '.', $target_field_id . '.', $input['id'] );
+							$source_field_value     = $this->get_source_field_value( $entry, $source_field, $input['id'] );
+							$new_entry[ $input_id ] = $this->get_target_field_value( $source_field_value, $target_field, $input_id );
+						}
+					} else {
+						$new_entry[ $target_field_id ] = $source_field->get_value_export( $entry, $source_field_id, true );
+					}
+				} else {
+					$source_field_value            = $this->get_source_field_value( $entry, $source_field, $source_field_id );
+					$new_entry[ $target_field_id ] = $this->get_target_field_value( $source_field_value, $target_field, $target_field_id );
+				}
+			} elseif ( $source_field_id == 'gf_custom' ) {
+				$new_entry[ $target_field_id ] = GFCommon::replace_variables( $mapping['custom_value'], $form, $entry, false, false, false, 'text' );
+			} else {
+				$new_entry[ $target_field_id ] = $entry[ $source_field_id ];
+			}
+
+			return $new_entry;
+		}
+
+		/**
+		 * Get the source field value.
+		 *
+		 * Returns the choice text instead of the unique value for choice based poll, quiz and survey fields.
+		 *
+		 * The source field choice unique value will not match the target field unique value.
+		 *
+		 * @param array $entry The entry being processed by this step.
+		 * @param GF_Field $source_field The source field being processed.
+		 * @param string $source_field_id The ID of the source field or input.
+		 *
+		 * @return string
+		 */
+		public function get_source_field_value( $entry, $source_field, $source_field_id ) {
+
+			if ( ! isset( $entry[ $source_field_id ] ) ) {
+				return '';
+			}
+			$field_value = $entry[ $source_field_id ];
+
+			if ( in_array( $source_field->type, array( 'poll', 'quiz', 'survey' ) ) ) {
+				if ( $source_field->inputType == 'rank' ) {
+					$values = explode( ',', $field_value );
+					foreach ( $values as &$value ) {
+						$value = $this->get_source_choice_text( $value, $source_field );
+					}
+
+					return implode( ',', $values );
+				}
+
+				if ( $source_field->inputType == 'likert' && $source_field->gsurveyLikertEnableMultipleRows ) {
+					list( $row_value, $field_value ) = rgexplode( ':', $field_value, 2 );
+				}
+
+				return $this->get_source_choice_text( $field_value, $source_field );
+			}
+
+			return $field_value;
+		}
+
+		/**
+		 * Get the value to be set for the target field.
+		 *
+		 * Returns the target fields choice unique value instead of the source field choice text for choice based poll, quiz and survey fields.
+		 *
+		 * @param string $field_value The source field value.
+		 * @param GF_Field $target_field The target field being processed.
+		 * @param string $target_field_id The ID of the target field or input.
+		 *
+		 * @return string
+		 */
+		public function get_target_field_value( $field_value, $target_field, $target_field_id ) {
+			if ( is_object( $target_field ) && in_array( $target_field->type, array( 'poll', 'quiz', 'survey' ) ) ) {
+				if ( $target_field->inputType == 'rank' ) {
+					$values = explode( ',', $field_value );
+					foreach ( $values as &$value ) {
+						$value = $this->get_target_choice_value( $value, $target_field );
+					}
+
+					return implode( ',', $values );
+				}
+
+				$field_value = $this->get_target_choice_value( $field_value, $target_field );
+
+				if ( $target_field->inputType == 'likert' && $target_field->gsurveyLikertEnableMultipleRows ) {
+					$row_value   = $target_field->get_row_id( $target_field_id );
+					$field_value = sprintf( '%s:%s', $row_value, $field_value );
+				}
+			}
+
+			return $field_value;
+		}
+
+		/**
+		 * Gets the choice text for the supplied choice value.
+		 *
+		 * @param string $selected_choice The choice value from the source field.
+		 * @param GF_Field $source_field The source field being processed.
+		 *
+		 * @return string
+		 */
+		public function get_source_choice_text( $selected_choice, $source_field ) {
+			return $this->get_choice_property( $selected_choice, $source_field->choices, 'value', 'text' );
+		}
+
+		/**
+		 * Gets the choice value for the supplied choice text.
+		 *
+		 * @param string $selected_choice The choice text from the source field.
+		 * @param GF_Field $target_field The target field being processed.
+		 *
+		 * @return string
+		 */
+		public function get_target_choice_value( $selected_choice, $target_field ) {
+			return $this->get_choice_property( $selected_choice, $target_field->choices, 'text', 'value' );
+		}
+
+		/**
+		 * Helper to get the specified choice property for the selected choice.
+		 *
+		 * @param string $selected_choice The selected choice value or text.
+		 * @param array $choices The field choices.
+		 * @param string $compare_property The choice property the $selected_choice is to be compared against.
+		 * @param string $return_property The choice property to be returned.
+		 *
+		 * @return string
+		 */
+		public function get_choice_property( $selected_choice, $choices, $compare_property, $return_property ) {
+			if ( $selected_choice && is_array( $choices ) ) {
+				foreach ( $choices as $choice ) {
+					if ( $choice[ $compare_property ] == $selected_choice ) {
+						return $choice[ $return_property ];
+					}
+				}
+			}
+
+			return $selected_choice;
 		}
 	}
 
