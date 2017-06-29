@@ -131,7 +131,7 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 				}
 
 				$submission['submitted_values'] = $_submission;
-				$submission['partial_entry']    = new stdClass();
+				$submission['partial_entry']    = GFFormsModel::get_current_lead();
 				$submission['field_values']     = "";
 				$submission['page_number']      = 1;
 				$submission['files']            = $files;
@@ -357,7 +357,7 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 						foreach ( $source_field_inputs as $input ) {
 							$input_id               = str_replace( $source_field_id . '.', $target_field_id . '.', $input['id'] );
 							$source_field_value     = $this->get_source_field_value( $entry, $source_field, $input['id'] );
-							$new_entry[ $input_id ] = $this->get_target_field_value( $source_field_value, $target_field, $input_id );
+							$new_entry[ $target_field_id ][ $input_id ] = $this->get_target_field_value( $source_field_value, $target_field, $input_id );
 						}
 					} else {
 						$new_entry[ $target_field_id ] = $source_field->get_value_export( $entry, $source_field_id, true );
