@@ -122,7 +122,10 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 
 			if ( ! empty( $new_entry ) ) {
 				$_submission = $new_entry;
+				// Unset special fields because they shouldn't be displayed in the submission data
+				unset($_submission['email']);
 				unset($_submission['uuid']);
+
 				$form_unique_id = GFFormsModel::get_form_unique_id( $form['id'] );
 
 				$files = GFCommon::json_decode( stripslashes( RGForms::post( 'gform_uploaded_files' ) ) );
@@ -144,6 +147,7 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 					GFFormsModel::get_incomplete_submissions_table_name(),
 					array(
 						'uuid'         => $new_entry['uuid'],
+						'email'         => $new_entry['email'],
 						'form_id'      => $target_form['id'],
 						'date_created' => current_time( 'mysql', true ),
 						'submission'   => json_encode( $submission ),
@@ -151,6 +155,7 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 						'source_url'   => $new_entry['source_url'],
 					),
 					array(
+						'%s',
 						'%s',
 						'%d',
 						'%s',
@@ -207,7 +212,8 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 				$fields[] = array( 'value' => 'source_url', 'label' => esc_html__( 'Source Url', 'gravitywpsaveandcontinue' ) );
 				$fields[] = array( 'value' => 'created_by', 'label' => esc_html__( 'Created By', 'gravitywpsaveandcontinue' ) );
 
-				if ( 'target' == $form_type ) {
+				if ( 'target' == $form_type ) { // SF for special fields that helps to identify or validate entry
+					$fields[] = array( 'value' => 'email', 'label' => esc_html__( 'SF: Email', 'gravitywpsaveandcontinue' ) );
 					$fields[] = array( 'value' => 'uuid', 'label' => esc_html__( 'SF: UUID', 'gravitywpsaveandcontinue' ) );
 				}
 
