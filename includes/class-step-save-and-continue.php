@@ -443,6 +443,9 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 					$row_value   = $target_field->get_row_id( $target_field_id );
 					$field_value = sprintf( '%s:%s', $row_value, $field_value );
 				}
+			} elseif ( is_object( $target_field ) && $target_field->type == 'multiselect' && ! empty( $field_value ) && ! is_array( $field_value ) ) {
+				// Convert the comma-delimited string into an array.
+				$field_value = json_decode( $field_value );
 			}
 
 			return $field_value;
