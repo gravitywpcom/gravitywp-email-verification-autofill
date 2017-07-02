@@ -87,7 +87,7 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 				return false;
 			}
 
-			$fields = $this->get_field_map_choices( $target_form, 'target' );
+			$fields = $this->get_field_map_choices( $target_form, 'target', null, array( 'fileupload' ) );
 			return $fields;
 		}
 
@@ -100,7 +100,7 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 
 			$form = $this->get_form();
 
-			$fields = $this->get_field_map_choices( $form );
+			$fields = $this->get_field_map_choices( $form, 'source', null, array( 'fileupload' ) );
 			return $fields;
 		}
 
