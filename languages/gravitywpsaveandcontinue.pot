@@ -1,0 +1,125 @@
+# Copyright 2015-2017 Steven Henty.
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: GravityWP - Save and Continue 1.0.0\n"
+"Report-Msgid-Bugs-To: https://www.gravityflow.io\n"
+"POT-Creation-Date: 2017-07-10 17:48+0800\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"PO-Revision-Date: 2017-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Steven Henty <support@gravityflow.io>\n"
+"Language-Team: Erik van Beek <support@gravitywp.com>\n"
+"X-Generator: Poedit 2.0.2\n"
+"X-Poedit-KeywordsList: __;_e;_x:1,2c;_ex:1,2c;_n:1,2;_nx:1,2,4c;_n_noop:1,2;"
+"_nx_noop:1,2,3c;esc_attr__;esc_html__;esc_attr_e;esc_html_e;esc_attr_x:1,2c;"
+"esc_html_x:1,2c\n"
+"Project-Id-Version: gravityflowformconnector\n"
+"Language: en_US\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Poedit-Basepath: ..\n"
+"X-Poedit-SourceCharset: UTF-8\n"
+"X-Textdomain-Support: yes\n"
+"X-Poedit-SearchPath-0: .\n"
+
+#: includes/class-step-save-and-continue.php:20
+#: includes/class-step-save-and-continue.php:47
+msgid "Save and Continue"
+msgstr ""
+
+#: includes/class-step-save-and-continue.php:29
+msgid "Select a Form"
+msgstr ""
+
+#: includes/class-step-save-and-continue.php:53
+msgid "Date Created"
+msgstr ""
+
+#: includes/class-step-save-and-continue.php:56
+msgid ""
+"Specify the date_created fields in the rg_incomplete_submissions table. It "
+"needs to be in the ISO date format: YYYY-mm-dd HH:ii:ss (eg. 2017-07-31 "
+"23:59:59). <br /><br /> Leave empty if you don't need to force the date."
+msgstr ""
+
+#: includes/class-step-save-and-continue.php:61
+msgid "Email Mapping"
+msgstr ""
+
+#: includes/class-step-save-and-continue.php:62
+msgid ""
+"Map an email field from the current form to the target form. You must have "
+"an Email field in the current form."
+msgstr ""
+
+#: includes/class-step-save-and-continue.php:70
+msgid "Unique ID Mapping"
+msgstr ""
+
+#: includes/class-step-save-and-continue.php:71
+msgid ""
+"Map an Unique ID field from the current form to the target form. You must "
+"have a Unique ID field in the current form."
+msgstr ""
+
+#: includes/class-step-save-and-continue.php:79
+msgid "Continue to Form"
+msgstr ""
+
+#: includes/class-step-save-and-continue.php:80
+msgid "Select the form to be used for this save and continue step."
+msgstr ""
+
+#: includes/class-step-save-and-continue.php:91
+msgid "Field Mapping"
+msgstr ""
+
+#: includes/class-step-save-and-continue.php:95
+msgid "Field"
+msgstr ""
+
+#: includes/class-step-save-and-continue.php:96
+msgid "Value"
+msgstr ""
+
+#: includes/class-step-save-and-continue.php:99
+msgid "Mapping"
+msgstr ""
+
+#: includes/class-step-save-and-continue.php:99
+msgid ""
+"Map the fields of this form to the selected form. Values from this form will "
+"be saved in the entry in the selected form"
+msgstr ""
+
+#: includes/class-step-save-and-continue.php:149
+msgid "Processed."
+msgstr ""
+
+#: includes/class-step-save-and-continue.php:234
+msgid "Select a Field"
+msgstr ""
+
+#: includes/class-step-save-and-continue.php:241
+#, php-format
+msgid "Select a %s Field"
+msgstr ""
+
+#: includes/class-step-save-and-continue.php:249
+msgid "Entry ID"
+msgstr ""
+
+#: includes/class-step-save-and-continue.php:253
+msgid "Created By"
+msgstr ""
+
+#: includes/class-step-save-and-continue.php:285
+#: includes/class-step-save-and-continue.php:292
+#: includes/class-step-save-and-continue.php:312
+msgid "Full"
+msgstr ""
+
+#: includes/class-step-save-and-continue.php:299
+msgid "Selected"
+msgstr ""
