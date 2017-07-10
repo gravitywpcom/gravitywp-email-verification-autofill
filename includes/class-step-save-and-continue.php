@@ -53,7 +53,7 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 						'label'             => esc_html__( 'Date Created', 'gravitywpsaveandcontinue' ),
 						'required'          => false,
 						'class'             => 'small',
-						'tooltip'           => esc_html__( 'Specify the date_created fields in the rg_incomplete_submissions table. It needs to be in the ISO date format: YYYY-mm-dd HH:ii:ss (eg. 2017-07-31 23:59:59). <br /><br /> Leave empty if you don\'t need to force the date.', 'gravitywpsaveandcontinue' ),
+						'tooltip'           => esc_html__( 'Specify the date_created fields in the rg_incomplete_submissions table. It needs to be in the ISO date format: <strong>YYYY-mm-dd HH:ii:ss (eg. 2017-07-31 23:59:59)</strong>. <br /><br /> Leave empty if you don\'t need to force the date.', 'gravitywpsaveandcontinue' ),
 						'feedback_callback' => array( $this, 'validate_date_created' ),
 					),
 					array(
