@@ -31,6 +31,18 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 				$form_choices[] = array( 'label' => $form->title, 'value' => $form->id );
 			}
 
+			$fields = $this->get_field_map_choices( $this->get_form(), 'source', 'email' );
+			$email_choices = array();
+			foreach ( $fields  as $field ) {
+				$email_choices[] = array( 'label' => $field['label'], 'value' => $field['value'] );
+			}
+
+			$fields = $this->get_field_map_choices( $this->get_form(), 'source', 'uid' );
+			$uid_choices = array();
+			foreach ( $fields  as $field ) {
+				$uid_choices[] = array( 'label' => $field['label'], 'value' => $field['value'] );
+			}
+
 			$settings = array(
 				'title'  => esc_html__( 'Save and Continue', 'gravitywpsaveandcontinue' ),
 				'fields' => array(
@@ -44,6 +56,24 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 						'tooltip'           => esc_html__( 'Specify the date_created fields in the rg_incomplete_submissions table. It needs to be in the ISO date format: YYYY-mm-dd HH:ii:ss (eg. 2017-07-31 23:59:59). <br /><br /> Leave empty if you don\'t need to force the date.', 'gravitywpsaveandcontinue' ),
 						'tooltip_class'     => 'tooltipclass',
 						'feedback_callback' => array( $this, 'validate_date_created' ),
+					),
+					array(
+						'name' => 'email',
+						'label' => esc_html__( 'Email Mapping', 'gravitywpsaveandcontinue' ),
+						'tooltip'       => __( 'Map an email field from the current form to the target form. You must have an Email field in the current form.', 'gravitywpsaveandcontinue' ),
+						'type' => 'select',
+						'onchange'    => "jQuery(this).closest('form').submit();",
+						'choices' => $email_choices,
+						'required' => true
+					),
+					array(
+						'name' => 'uuid',
+						'label' => esc_html__( 'Unique ID Mapping', 'gravitywpsaveandcontinue' ),
+						'tooltip'       => __( 'Map an Unique ID field from the current form to the target form. You must have a Unique ID field in the current form.', 'gravitywpsaveandcontinue' ),
+						'type' => 'select',
+						'onchange'    => "jQuery(this).closest('form').submit();",
+						'choices' => $uid_choices,
+						'required' => true
 					),
 					array(
 						'name' => 'target_form_id',
@@ -133,11 +163,10 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 
 			if ( ! empty( $new_entry ) ) {
 				$_submission = $new_entry;
-				// Unset special fields because they shouldn't be displayed in the submission data
-				unset($_submission['email']);
-				unset($_submission['uuid']);
 
 				$form_unique_id = GFFormsModel::get_form_unique_id( $form['id'] );
+				$ip             = GFFormsModel::get_ip();
+				$source_url     = GFFormsModel::get_current_page_url();
 
 				$files = GFCommon::json_decode( stripslashes( RGForms::post( 'gform_uploaded_files' ) ) );
 				if ( ! is_array( $files ) ) {
@@ -157,13 +186,13 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 				$result = $wpdb->insert(
 					GFFormsModel::get_incomplete_submissions_table_name(),
 					array(
-						'uuid'         => $new_entry['uuid'],
-						'email'         => $new_entry['email'],
+						'uuid'         => $this->get_setting( 'uuid' ),
+						'email'         => $this->get_setting( 'email' ),
 						'form_id'      => $target_form['id'],
 						'date_created' => ( $this->validate_date_created( $this->get_setting( 'date_created' ) ) ) ? $this->get_setting( 'date_created' ) : current_time( 'mysql', true ),
 						'submission'   => json_encode( $submission ),
-						'ip'           => $new_entry['ip'],
-						'source_url'   => $new_entry['source_url'],
+						'ip'           => $ip,
+						'source_url'   => $source_url,
 					),
 					array(
 						'%s',
@@ -218,20 +247,15 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 			// if field types not restricted add the default fields and entry meta
 			if ( is_null( $field_type ) ) {
 				$fields[] = array( 'value' => 'id', 'label' => esc_html__( 'Entry ID', 'gravitywpsaveandcontinue' ) );
-				$fields[] = array( 'value' => 'date_created', 'label' => esc_html__( 'Entry Date', 'gravitywpsaveandcontinue' ) );
-				$fields[] = array( 'value' => 'ip', 'label' => esc_html__( 'User IP', 'gravitywpsaveandcontinue' ) );
-				$fields[] = array( 'value' => 'source_url', 'label' => esc_html__( 'Source Url', 'gravitywpsaveandcontinue' ) );
+//				$fields[] = array( 'value' => 'date_created', 'label' => esc_html__( 'Entry Date', 'gravitywpsaveandcontinue' ) );
+//				$fields[] = array( 'value' => 'ip', 'label' => esc_html__( 'User IP', 'gravitywpsaveandcontinue' ) );
+//				$fields[] = array( 'value' => 'source_url', 'label' => esc_html__( 'Source Url', 'gravitywpsaveandcontinue' ) );
 				$fields[] = array( 'value' => 'created_by', 'label' => esc_html__( 'Created By', 'gravitywpsaveandcontinue' ) );
 
 				if ( 'target' == $form_type ) { // SF for special fields that helps to identify or validate entry
 					$fields[] = array( 'value' => 'email', 'label' => esc_html__( 'SF: Email', 'gravitywpsaveandcontinue' ) );
 					$fields[] = array( 'value' => 'uuid', 'label' => esc_html__( 'SF: UUID', 'gravitywpsaveandcontinue' ) );
 				}
-
-//				$entry_meta = GFFormsModel::get_entry_meta( $form['id'] );
-//				foreach ( $entry_meta as $meta_key => $meta ) {
-//					$fields[] = array( 'value' => $meta_key, 'label' => rgars( $entry_meta, "{$meta_key}/label" ) );
-//				}
 			}
 
 			// Populate form fields
