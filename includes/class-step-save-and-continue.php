@@ -306,12 +306,12 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 							);
 						}
 
-						foreach ( $inputs as $input ) {
-							$fields[] = array(
-								'value' => $input['id'],
-								'label' => GFCommon::get_label( $field, $input['id'] ),
-							);
-						}
+//						foreach ( $inputs as $input ) {
+//							$fields[] = array(
+//								'value' => $input['id'],
+//								'label' => GFCommon::get_label( $field, $input['id'] ),
+//							);
+//						}
 					} elseif ( $input_type == 'list' && $field->enableColumns && $field_is_valid_type && ! $exclude_field ) {
 						$fields[] = array(
 							'value' => $field->id,
