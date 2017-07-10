@@ -488,6 +488,9 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 			} elseif ( is_object( $target_field ) && $target_field->type == 'multiselect' && ! empty( $field_value ) && ! is_array( $field_value ) ) {
 				// Convert the comma-delimited string into an array.
 				$field_value = json_decode( $field_value );
+			} elseif ( is_object( $target_field ) && $target_field->type == 'email' && ! empty( $field_value ) && ! is_array( $field_value ) ) {
+				//@todo temporarily set email value to array even it doesn't support confirmation
+				$field_value = array( $field_value, $field_value );
 			}
 
 			return $field_value;
