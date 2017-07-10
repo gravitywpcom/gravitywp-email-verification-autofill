@@ -180,14 +180,15 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 				$submission['files']            = $files;
 				$submission['gform_unique_id']  = $form_unique_id;
 
-//				$result = GFFormsModel::save_incomplete_submission( $form, GFFormsModel::get_current_lead(), $_submission, 1, $files, $form_unique_id, $new_entry['ip'], $new_entry['source_url'], $new_entry['uuid'] );
+				$uuid = GFFormsModel::get_field( $form, $this->get_setting( 'uuid' ) );
+				$email = GFFormsModel::get_field( $form, $this->get_setting( 'email' ) );
 
 				global $wpdb;
 				$result = $wpdb->insert(
 					GFFormsModel::get_incomplete_submissions_table_name(),
 					array(
-						'uuid'         => $this->get_setting( 'uuid' ),
-						'email'         => $this->get_setting( 'email' ),
+						'uuid'         => $this->get_source_field_value( $entry, $uuid, $this->get_setting( 'uuid' ) ),
+						'email'         => $this->get_source_field_value( $entry, $email, $this->get_setting( 'email' ) ),
 						'form_id'      => $target_form['id'],
 						'date_created' => ( $this->validate_date_created( $this->get_setting( 'date_created' ) ) ) ? $this->get_setting( 'date_created' ) : current_time( 'mysql', true ),
 						'submission'   => json_encode( $submission ),
