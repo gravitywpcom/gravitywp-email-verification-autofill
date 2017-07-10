@@ -251,11 +251,6 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 //				$fields[] = array( 'value' => 'ip', 'label' => esc_html__( 'User IP', 'gravitywpsaveandcontinue' ) );
 //				$fields[] = array( 'value' => 'source_url', 'label' => esc_html__( 'Source Url', 'gravitywpsaveandcontinue' ) );
 				$fields[] = array( 'value' => 'created_by', 'label' => esc_html__( 'Created By', 'gravitywpsaveandcontinue' ) );
-
-				if ( 'target' == $form_type ) { // SF for special fields that helps to identify or validate entry
-					$fields[] = array( 'value' => 'email', 'label' => esc_html__( 'SF: Email', 'gravitywpsaveandcontinue' ) );
-					$fields[] = array( 'value' => 'uuid', 'label' => esc_html__( 'SF: UUID', 'gravitywpsaveandcontinue' ) );
-				}
 			}
 
 			// Populate form fields
