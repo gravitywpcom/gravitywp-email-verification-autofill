@@ -35,6 +35,17 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 				'title'  => esc_html__( 'Save and Continue', 'gravitywpsaveandcontinue' ),
 				'fields' => array(
 					array(
+						'type'              => 'text',
+						'id'                => 'date_created',
+						'name'              => 'date_created',
+						'label'             => esc_html__( 'Date Created', 'gravitywpsaveandcontinue' ),
+						'required'          => false,
+						'class'             => 'small',
+						'tooltip'           => esc_html__( 'Specify the date_created fields in the rg_incomplete_submissions table. It needs to be in the ISO date format: YYYY-mm-dd HH:ii:ss (eg. 2017-07-31 23:59:59). <br /><br /> Leave empty if you don\'t need to force the date.', 'gravitywpsaveandcontinue' ),
+						'tooltip_class'     => 'tooltipclass',
+						'feedback_callback' => array( $this, 'validate_date_created' ),
+					),
+					array(
 						'name' => 'target_form_id',
 						'label' => esc_html__( 'Continue to Form', 'gravitywpsaveandcontinue' ),
 						'tooltip'       => __( 'Select the form to be used for this save and continue step.', 'gravitywpsaveandcontinue' ),
@@ -149,7 +160,7 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 						'uuid'         => $new_entry['uuid'],
 						'email'         => $new_entry['email'],
 						'form_id'      => $target_form['id'],
-						'date_created' => current_time( 'mysql', true ),
+						'date_created' => ( $this->validate_date_created( $this->get_setting( 'date_created' ) ) ) ? $this->get_setting( 'date_created' ) : current_time( 'mysql', true ),
 						'submission'   => json_encode( $submission ),
 						'ip'           => $new_entry['ip'],
 						'source_url'   => $new_entry['source_url'],
@@ -501,6 +512,14 @@ if ( class_exists( 'Gravity_Flow_Step' ) ) {
 			}
 
 			return $selected_choice;
+		}
+
+		public function validate_date_created( $dateStr ) {
+			if ( preg_match( '/^([\+-]?\d{4}(?!\d{2}\b))((-?)((0[1-9]|1[0-2])(\3([12]\d|0[1-9]|3[01]))?|W([0-4]\d|5[0-2])(-?[1-7])?|(00[1-9]|0[1-9]\d|[12]\d{2}|3([0-5]\d|6[1-6])))([T\s]((([01]\d|2[0-3])((:?)[0-5]\d)?|24\:?00)([\.,]\d+(?!:))?)?(\17[0-5]\d([\.,]\d+)?)?([zZ]|([\+-])([01]\d|2[0-3]):?([0-5]\d)?)?)?)?$/', $dateStr ) > 0 ) {
+				return true;
+			} else {
+				return false;
+			}
 		}
 	}
 
