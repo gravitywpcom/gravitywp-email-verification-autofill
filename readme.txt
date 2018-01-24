@@ -1,4 +1,4 @@
-=== GravityWP Email Verification Autofill ===
+=== GravityWP - Email Verification Autofill ===
 Contributors: erikvanbeek, yoren
 Tags: gravity forms, gravity view
 Requires at least: 4.0
