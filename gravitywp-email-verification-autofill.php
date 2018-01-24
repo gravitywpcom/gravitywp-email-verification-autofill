@@ -52,7 +52,7 @@ class GravityWP_Email_Verfication_Autofill {
 	 * @since 1.0.0
 	 */
 	public function enqueue_scripts() {
-		wp_enqueue_script( 'gravitywp_email_verification_autofill', plugins_url( '/js/scripts.js', __FILE__ ), array( 'jquery' ), '1.0.0' );
+		wp_enqueue_script( 'gravitywp_email_verification_autofill', plugins_url( '/js/scripts.js', __FILE__ ), array( 'jquery' ), '1.0.0', true );
 	}
 }
 
